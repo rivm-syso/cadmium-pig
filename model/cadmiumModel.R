@@ -20,13 +20,9 @@ i= 1
 #-----------------------------------------------------------------------------------------
 
 Cback <- input$Dpobck				#User defined in ShinyApp: mg Cd/kg feed ; 
-Cstart	<- input$Cfeed#0.89; 
-Cgrow <- input$Cfeed#0.86
-#User defined in ShinyApp:  
-#Fstart	<- dayw * 1.4; 
-#Fgrow1 <- dayw * 2.; 
-#Fgrow2 <- dayw *  2.6	#kg feed/d
-#Tgrow1	<- 3.; Tgrow2 <- 8. #ser defined in ShinyApp: ; 
+Cstart	<- input$Cfeed #0.89; 
+Cgrow <- input$Cfeed #0.86
+
 Tstart <-input$tstart
 Tdoseoff <- input$tdoseoff#+input$tstart				
 tSTOP		<- input$tstart+input$tdoseoff+input$tstop
@@ -41,9 +37,6 @@ V0kl		<- c(.114, .626)
 dVdtkl	<- c(.0256, .100)					# weight growth parameters
 
 ML<- c(1.,.5)
-
-#names(alfakl) <- names(betakl) <- names(MT0kl) <- names(dMTdCkl) <- names(V0kl) <- names(dVdtkl) <-
-#  orgnames
 
 A0	<- 0.							#mg Cd
 
@@ -125,8 +118,7 @@ f.model0 <- function(i) {
 }
 
 f.model1 <- function(Tdoseoff) {
-  valuealine<-1#ifelse(input$selected_organ == 1, input$limitKidney, input$limitLiver)
-  #age<-13
+  valuealine<-1
   yini<-c(A=0, V=0, D=0)
   
   tout<<-seq(0, tSTOP, by = 1)
@@ -135,20 +127,7 @@ f.model1 <- function(Tdoseoff) {
          dosing<<-data.frame(var = c("D") ,time = seq(input$tstart,input$tstart+input$tdoseoff, by =1), value = 0, method = c("add"))
   )
   
-  #tout<-seq(age-12, Tdoseoff+tSTOP+age-12, by = 1)
-  #toutTrue<-seq(age, Tdoseoff+tSTOP+age+age, by = 1)
-  #ifelse(Tdoseoff != 0,
-  #       dosing<<-data.frame(var = c("D") ,time = seq(age-12,age+Tdoseoff-12, by =1), value = c(dayw*Cgrow), method = c("add")),#
-  #       dosing<<-data.frame(var = c("D") ,time = seq(age-12,age+Tdoseoff-12, by =1), value = c(0), method = c("add"))#
-  #)
-  
-  
   hf	<- as.data.frame(ode(y = yini, times = tout, func = f.fun, events = list(data=dosing), parms = NULL))
-  
-#xlab	<- "Age (weeks)"
-  #ylab	<- "Cd concentration (mg/kg tissue)"
-  #plot(toutTrue, hf$output, type = "l", xlab = xlab, ylab = ylab,   xaxs="i",yaxs="i", xlim=c(0,input$Tdoseoff+input$tSTOP+age))
-  #abline(h = valuealine, col = "black")
 }
 
 
