@@ -1,0 +1,62 @@
+---
+title: "Cadmium in pigs"
+output: 
+  word_document:
+    #reference_docx: word-styles-reference.docx
+
+params:
+  species: NA
+  product: NA
+  intake1: NA
+  intake2: NA
+  intake3: NA
+  intake4: NA
+  intake5: NA
+  expDuration: NA
+  tstop: NA
+  contaminationLevel: NA
+  backgroundLevel: NA
+
+---
+**Results cadmium transfer to liver and kidney - pigs, version 2.0**\
+`r format(Sys.Date(), "%d %B %Y")`  
+
+**Proclaimer**\
+To evaluate compliance with legal standards, the results obtained with the simulation of the transfer of the contaminant from feed to animal products should be confirmed by analytical results. For more information: https://feedfoodtransfer.nl/en/proclaimer. 
+
+
+**Input parameters used in the simulation**  
+- Feed type: `r if (params$species == "Pig;") {
+  "Total compound feed"
+} else if (params$species == "wetMixes") {
+  "Wet mixes"
+} else if (params$species == "feedIngredients") {
+  params$product
+}  else {"Other"}`.  
+- Feed intake: `r if (params$species == "Pig;") {
+  "Default time-dependent intake as depicted in the figure, starting at day 28"
+} else if (params$species == "wetMixes") {
+  "Default time-dependent intake as depicted in the figure, starting at day 66"
+} else if (params$species == "feedIngredients") {
+ "Default time-dependent intake as depicted in the figure, starting at day 28"
+}  else {
+  paste(params$intake1, "kg/day (0-28);",
+        params$intake2, "kg/day (29-75);",
+        params$intake3, "kg/day (76-125);",
+        params$intake4, "kg/day (125-175);",
+        params$intake5, "kg/day (>175);")
+}`.  
+- Contamination level: `r params$contaminationLevel` mg per kg feed.  
+- Background level: `r params$backgroundLevel` mg per kg feed.  
+- Exposure duration: `r params$expDuration` days.    
+- Time after exposure: `r params$tstop` days.\
+
+
+```{r fig.asp=0.50, dpi = 300, echo=FALSE}
+   library(png)
+   library(grid)
+  img <- readPNG("./outP1.png")
+  grid.raster(img)
+```
+\
+*Figure 1. Concentration Cd versus time.*

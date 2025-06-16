@@ -1,0 +1,160 @@
+
+---
+title: "Results cadmium transfer to liver and kidney"
+output: word_document
+params:
+  age: NA
+  feed: NA
+  intake1: NA
+  intake2: NA
+  intake3: NA
+  concCad: NA
+  expDuration:  NA
+  deplTime: NA
+  selected_organ: NA
+---
+
+`r format(Sys.Date(), "%d %B %Y")`   
+
+## Input parameters used in the simulation  
+* __Contamimated feed product:__ `r params$feed`.   
+* __Intake of the feed product:__  
+    + `r params$intake1` kg dm/day (<15 weeks), 
+    + `r params$intake2` kg dm/day (15-20 weeks),
+    + `r params$intake3` kg dm/day (>20 weeks)    
+* __Cadmium level:__ `r params$concCad` mg/kg feed.    
+* __Age at the start of the exposure period:__ `r params$age` weeks.    
+* __Exposure duration:__ `r params$expDuration` weeks.    
+* __Depletion time:__ `r params$deplTime` weeks.    
+
+## Simulation results
+```{r echo=FALSE, warning = FALSE}
+#-----------------------------------------------------------------------------------------
+  # code of cadmium in pigs model, re-implemented from ASCL into R
+  # fixed dose-regime, but time of stopping the regime is user-defined
+  # dose size is fixed, but has to be made user-defined
+  # implementation follows previous model implementations
+  # (1) using R ode-procedure to solve DE
+  # (2) function that defines gradient for given time-point and values of state-variables 
+  # (3) ordered series of time points and related event indicator values
+  #-----------------------------------------------------------------------------------------
+  
+  norg		<- 2
+  orgnames	<- c("Kidney", "Liver")
+  dayw		<- 7
+  
+  #-----------------------------------------------------------------------------------------
+  # general parameters
+  #-----------------------------------------------------------------------------------------
+  
+  Cback <- 0.04				#User defined in ShinyApp: mg Cd/kg feed ; Cstart	<- 0.89; Cgrow <- 0.86
+  #User defined in ShinyApp:  Fstart	<- dayw * 1.4; Fgrow1 <- dayw * 2.; Fgrow2 <- dayw *  2.6	#kg feed/d
+  Tgrow1	<- 3.; Tgrow2 <- 8. #ser defined in ShinyApp: ; Tdoseoff <- 16;				
+  #tSTOP		<- 15.
+  
+  alfakl	<- c(.051, .059)
+  betakl	<- dayw * c(12.4, 37.4)
+  
+  MT0kl		<- c(8.65, 22.3)
+  dMTdCkl	<- c(.923, 0)
+  V0kl		<- c(.114, .626)
+  dVdtkl	<- c(.0256, .100)					# weight growth parameters
+  
+  ML<- c(1.,.5)
+  
+  names(alfakl) <- names(betakl) <- names(MT0kl) <- names(dMTdCkl) <- names(V0kl) <- names(dVdtkl) <-
+    orgnames
+  
+  A0	<- 0.							#mg Cd
+  
+  #-----------------------------------------------------------------------------------------
+  # DERIVATIVE FUNCTION USED FOR SOLVING DIFFERENTIAL EQUATIONS
+  #-----------------------------------------------------------------------------------------
+  
+f.fun <- function(t, y, pars) {
+    with(as.list(c(y, pars)), {
+    ifelse(t<params$expDuration, expon <- 1, expon <- 0)
+    V	<- V0 + dVdt * t
+    Cd	<- A / V
+    MT	<- MT0 + dMTdC * Cd
+    A	<- alfa * MT * D / (hbeta + D)  
+    D	<- -D +((1 - expon) * Cback*params$intake3*dayw)
+    res<-c(A,V,D)
+    result<-(list(res, output= Cd))}
+      )
+  }
+  
+  
+  #-----------------------------------------------------------------------------------------
+  # SOLVING DIFFERENTIAL EQUATIONS FOR GIVEN ORGAN, TIME-OF-STOPPING-DOSE, AND ORGAN NAME
+  #-----------------------------------------------------------------------------------------
+  
+  # note: all parameters used within the derivative function are defined globally
+  
+  f.model0 <-  function(i) {
+    alfa		<<- alfakl[i]
+    hbeta		<<- betakl[i]
+    MT0		<<- MT0kl[i]
+    dMTdC		<<- dMTdCkl[i]
+    V0		<<- V0kl[i]
+    dVdt		<<- dVdtkl[i]
+  }
+
+  f.model1 <- function(pars, orgname) {
+    yini<-c(A=0, V=0, D=0)
+    tout<-seq(params$age-12, params$expDuration+params$deplTime+params$age-12, by = 1)
+    toutTrue<-seq(params$age, params$expDuration+params$deplTime+params$age, by = 1)
+    feedPeriod1Fixed<-data.frame(var = c("D") ,time = seq(0,3, by =1), value = c(params$intake1*dayw* params$concCad), method = c("add"))
+    feedPeriod1Flex<-data.frame(var = c("D") ,time = seq(0,params$expDuration, by =1), value = c(params$intake1*dayw* params$concCad), method = c("add"))
+    feedPeriod2Fixed<-data.frame(var = c("D") ,time = seq(0,8, by =1), value = c(params$intake2*dayw* params$concCad), method = c("add"))
+    feedPeriod2Flex<-data.frame(var = c("D") ,time = seq(0,params$expDuration, by =1), value = c(params$intake2*dayw* params$concCad), method = c("add"))
+    feedPeriod3Flex<-data.frame(var = c("D") ,time = seq(0,params$expDuration, by =1), value = c(params$intake3*dayw* params$concCad), method = c("add"))
+    if ( params$expDuration<=3) {
+      dosing<- feedPeriod1Flex 
+    } else if ( params$expDuration>3 & params$expDuration <=8) {
+      dosing<- rbind(feedPeriod1Fixed,feedPeriod2Flex)%>% slice(., -5:-8)
+    } else {
+      dosing<- rbind(feedPeriod1Fixed,feedPeriod2Fixed, feedPeriod3Flex) %>% slice(., -5:-8)%>% slice(., -10:-18)
+    }
+    
+    hf	<- as.data.frame(ode(y = yini, times = tout, func = f.fun, events = list(data=dosing), parms = NULL))
+    
+    # Find points where concentration is above legal limit.
+    # Find points where concentration is above legal limit.
+    EUlimit <- ML[as.numeric(params$selected_organ)]
+    above<-hf$output>EUlimit
+    # Points always intersect when above=TRUE, then FALSE or reverse
+    intersect.points<-which(diff(above)!=0 & above == TRUE)-params$expDuration
+    # Find peak concentration
+    cmax<-max(hf$output)
+    cD2<-max(hf$output[2])
+    if (length(intersect.points) == 0  & cmax < EUlimit )  {
+      intersect.text<-paste("(tissue concentration below EU limit of", as.character(EUlimit),"mg/kg)")
+    } else if (length(intersect.points) == 0 & cmax >= EUlimit) { 
+      intersect.text<- "(EU limit not reached at end of depletion time)"
+    } else if (cD2>EUlimit & intersect.points <= params$expDuration+1 | intersect.points==params$deplTime+1){  
+      intersect.text<- "(EU limit not reached at end of depletion time)"
+    } else {
+      intersect.text<-paste("EU limit reached after", as.character(intersect.points), "days from last exposure")
+    }
+    
+    xlab	<- "Time (weeks)"
+    ylab	<- paste("Cd concentration (mg/kg", orgname, ")")
+    plot(toutTrue, hf$output, type = "l", xlab = xlab, ylab = ylab)
+
+  }
+  
+  f.model <- function(i, Tdoseoff, orgname) {
+    f.model0(i)
+    f.model1(Tdoseoff, orgname)
+  }
+  
+	f.model(1, Tgrow1, orgnames[1])
+
+	
+	f.model(2, Tgrow2, orgnames[2])
+
+  
+```
+
+

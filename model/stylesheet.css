@@ -1,0 +1,13 @@
+
+.shiny-output-error { 
+  visibility: hidden; }
+
+.shiny-output-error:before { 
+  visibility: hidden; }
+  
+body {
+    transform-origin: left top; /* Expand page right and down instead of in all directions */
+    transform: scale(1); /* Scale (zoom) body 100% */
+    margin-right: 6.67%; /* Contract width of body by 20/120 to avoid horizontal scrolling */
+    margin-left: 6.67%; /* Contract width of body by 20/120 to avoid horizontal scrolling */
+}
