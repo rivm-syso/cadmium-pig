@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - type: organization
+    name: "Rijksinstituut voor Volksgezondheid en Milieu (RIVM)"
+  - type: organization
+    name: "Wagening Food Safety Research (WFSR)"
+preferred-citation:
+  authors:
+    - family-names: Hoogenboom
+      given-names: Ron L.A.P.
+    - family-names: Hattink
+      given-names: Jasper
+    - family-names: Polanen
+      given-names: Ab
+    - family-names: van Oostrom
+      given-names: Sjaak
+    - family-names: Verbunt
+      given-names: John
+    - family-names: Traag
+      given-names: Wim
+    - family-names: van Eijkeren
+      given-names: Jan
+    - family-names: De Boeck
+      given-names: Gudrun
+    - family-names: Zeilmaker
+      given-names: Marco
+  title: "Carryover of cadmium from feed in growing pigs"
+  type: article
+title: "Cadmium in Pigs"
+version: 2.0
+repository-code: 'https://github.com/rivm-syso/cadmium-pig'
+url: 'https://www.feedfoodtransfer.nl'
+abstract: Transfer model for cadmium in growing pigs
+license: EUPL-1.2
+identifiers:
+  - type: doi
+    value: 
+date-released: 2025-06-24
