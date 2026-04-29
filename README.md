@@ -15,16 +15,16 @@ kidney concentrations.
 ## Prerequisites
 * R (tested with version 4.5.0)
 
-* deSolve (tested with version 1.1.4)
-* dplyr (tested with version 3.5.2)
-* ggplot2 (tested with version 3.5.2)
-* plotly (tested with version 4.10.4)
-* rsvg (tested with version 2.6.2)
-* shiny (tested with version 1.10.0)
+* deSolve (tested with version 1.40)
+* plotly (tested with version 4.12.0)
+* rsvg (tested with version 2.6.1)
+* shiny (tested with version 1.11.1)
 * shinyFeedback (tested with version 0.4.0)
 * shinyjs (tested with version 2.1.0)
-* stringr (tested with version 1.5.1)
-* tidyr (tested with version 1.3.1)
+* stringr (tested with version 1.5.2)
+* rmarkdown (tested with version 2.30.0)
+* knitr (tested with version 1.50)
+* tidyverse (tested with version 2.0.0)
 
 ## Additional resources
 A peer-reviewed article has been published by [Hoogenboom et al. (2015)](https://doi.org/10.1080/19440049.2014.979370), 
