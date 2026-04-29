@@ -1,18 +1,12 @@
 library(shiny)
-#library(ggplot2)
 library(rmarkdown)
-#library(dplyr)
 library(deSolve)
-#library(tidyr)
 library(knitr)
 library(plotly)
 library(rsvg)
-#library(stringr)
 library(shinyjs)
 library(shinyFeedback)
 library(tidyverse)
-
-
 
 ####Input staple feed composition####
 feed_data<- read.csv(file = "data/feedDatabasePig.csv", header = TRUE) # convert to /data/feedDatabase.csv when making the docker file???
@@ -151,32 +145,12 @@ function(input, output,session) {
     }
   })
   
-  
-  
   output$plot1 <- renderPlotly ({
     prepareResultPlot2<<-result()
     prepareResultPlot1<- result() %>%
-      #mutate("conc" = output) %>%
       filter(compartment != 0) %>%
       filter(compartment %in% input$organName)
-      #ifelse(is.null(input$organName), filter(compartment == 0), filter(compartment %in% input$organName)) 
-      #mutate("time" = timval) %>%
-      #mutate(compartment = "kidney")
-      #gather(compartment, conc, Ac:Cf.Af) %>%
-      #filter(
-      #  if (all(c("central", "fat") %in% input$CentralFat)) { 
-      #    compartment  %in% c("Cc.Ac", "Cf.Af")
-      #  } else if (input$CentralFat ==  "central"){
-      #    compartment  %in% c("Cc.Ac")
-      #  } else if (input$CentralFat ==  "fat"){
-      #    compartment  %in% c("Cf.Af")
-      #  } else { 1
-      #    compartment  %in% c("Cf.Af", "Cc.Ac") 
-      #  }
-      #) %>%      
-      #  mutate(compartment = ifelse(compartment == "Cc.Ac", "Central", "Body fat"))
-    
-    
+  
     ylabel<- ({
       if (all(c("kidney", "liver") %in% input$organName)) {
         ylabel = "Cd concentration (mg/kg kidney or liver)" #\n
@@ -199,11 +173,11 @@ function(input, output,session) {
                                   label = c("limit liver") , color="#e34a33")}+
            
       labs(x="Time (days)", y= ylabel, fill="")+
-      scale_x_continuous(expand=c(0,0))+ #,limits=c(0,255)
+      scale_x_continuous(expand=c(0,0))+ 
       scale_y_continuous(expand=c(0,max(prepareResultPlot1$conc)),
               limits =c(0,hlineKidney+max(prepareResultPlot1$conc, na.rm = TRUE)))+
       {if(!is.null(input$organName))geom_line(data = prepareResultPlot1, aes(time, conc, linetype = compartment))} + 
-      #{if(is.null(input$organName))geom_line(data = prepareResultPlot2, aes(time, 0, linetype = compartment))} + 
+      
       
       scale_linetype_manual(breaks = c("liver","kidney"), values = c("solid","dotted"))+
       theme_bw()+
@@ -221,14 +195,14 @@ function(input, output,session) {
     
     
     plotly1<- if(input$intakeGraph == TRUE){
-      ggplotly(plot1) %>% #, tooltip = c("time", "conc")
+      ggplotly(plot1) %>% 
       layout(legend=list(title=list(text='')))%>%
       style(hoverlabel = list(bgcolor = "white"), hoveron = "text") %>%
       add_lines(x=~time, y=~intake, colors=NULL, yaxis="y2", 
                 data=result(), showlegend=FALSE, inherit=FALSE)%>%
       layout(yaxis2 = ay)
     } else {
-      ggplotly(plot1) %>% #, tooltip = c("time", "conc")
+      ggplotly(plot1) %>% 
       layout(legend=list(title=list(text='')))%>%
       style(hoverlabel = list(bgcolor = "white"), hoveron = "text")
     }
@@ -274,9 +248,6 @@ function(input, output,session) {
       tempImage1 <- file.path(temp_dir, "outP1.png")
       file.copy("report.Rmd", tempReport, overwrite = TRUE)
       file.copy(rsvg_png(charToRaw(input$plotly_svg), tempImage1), overwrite = TRUE)#, height = 290
-      
-      
-      
       
       # Set up parameters to pass to Rmd document
       params <- list(species = input$selected_species,

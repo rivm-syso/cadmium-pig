@@ -1,4 +1,4 @@
-library(deSolve)
+source('setup.R')
 
 #-----------------------------------------------------------------------------------------
 # code of cadmium in pigs model, re-implemented from ASCL into R
@@ -136,31 +136,13 @@ f.model1 <- function(Tdoseoff) {
 f.model <- function(i, Tdoseoff) { 
   f.model0(i)
   f.model1(Tdoseoff)
-}
+  }
 
 solution<-data.frame(compartment = 0, time = 0, A = 0, V = 0, D = 0, conc =0, intake = 0)
 for (i in c(1,2)) {
-modelResult<<-f.model(i, Tdoseoff)
-compartment<-data.frame(compartment = orgnames[i],modelResult)
-solution <- rbind(solution, compartment)
-  
-}
-
-
-#-----------------------------------------------------------------------------------------
-# application of function for several user selections
-#-----------------------------------------------------------------------------------------
-
-#if (!shinyind) {
-
-#	par(mfrow = c(2, 3))
-#f.model(1, Tgrow1, orgnames[1])
-#	f.model(1, Tgrow2, orgnames[2])
-#result<-f.model(1, tSTOP, orgnames[1])
-#	f.model(2, Tgrow1, orgnames[2])
-#	f.model(2, Tgrow2, orgnames[2])
-#f.model(2, tSTOP, orgnames[2])
-
-#}
+  modelResult<<-f.model(i, Tdoseoff)
+  compartment<-data.frame(compartment = orgnames[i],modelResult)
+  solution <- rbind(solution, compartment)
+  }
 
 
